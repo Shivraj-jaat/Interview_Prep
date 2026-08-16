@@ -7,7 +7,8 @@ const {
     submitAnswer,
     completeInterview,
     getMyAttempts,
-    getSingleAttempt
+    getSingleAttempt,
+    getMyAnalytics
 } = require("../controllers/attemptController");
 
 const { authentication } = require("../middlewares/auth");
@@ -20,5 +21,6 @@ router.post("/:attemptId/complete", authentication, completeInterview);
 
 router.get("/my-attempts", authentication, getMyAttempts);
 router.get("/:attemptId", authentication, getSingleAttempt);
+router.get("/my-analytics", authentication, getMyAnalytics);
 
 module.exports = router;
