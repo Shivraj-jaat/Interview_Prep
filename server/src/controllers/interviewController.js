@@ -81,10 +81,68 @@ const addInterview = async (req, res) => {
     }
 };
 
-// Get All Interviews
+
+// Get All Interviews (Search, filter and Pagination)
 const getAllInterviews = async (req, res) => {
     try {
-        let interviews = await InterviewModel.find().populate("categoryId");
+        let { search, categoryId, difficulty, page = 1, limit = 5 } = req.query;
+
+        page = Number(page);
+        limit = Number(limit);
+
+        // Pagination
+        if (page < 1) {
+            return res.status(400).json({ msg: "Page must be greater than 0" });
+        }
+
+        if (limit < 1 || limit > 20) {
+            return res.status(400).json({ msg: "Limit must be between 1 and 20" });
+        }
+
+        let filter = {};
+        // Search By Title
+        if (search) {
+            filter.title = {
+                $regex: search,
+                $options: "i",
+            };
+        }
+
+        // Filter By Category
+        if (categoryId) {
+            if (!isValidObjectId(categoryId)) {
+                return res.status(400).json({
+                    msg: "Invalid Category Id",
+                });
+            }
+            filter.categoryId = categoryId;
+        }
+
+        // Filter By Difficulty
+        if (difficulty) {
+            if (
+                difficulty !== "easy" &&
+                difficulty !== "medium" &&
+                difficulty !== "hard"
+            ) {
+                return res.status(400).json({ msg: "Invalid Difficulty" });
+            }
+
+            filter.difficulty = difficulty;
+        }
+
+        // Total Interviews
+        let totalInterviews = await InterviewModel.countDocuments(filter);
+
+        // Skip Calculation
+        let skip = (page - 1) * limit;
+
+        let interviews = await InterviewModel.find(filter)
+            .populate("categoryId")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         if (interviews.length === 0) {
             return res.status(404).json({ msg: "No Interview Found" });
         }
@@ -225,7 +283,7 @@ const deleteInterview = async (req, res) => {
 
         let deletedInterview = await InterviewModel.findByIdAndDelete(interviewId);
 
-        if (!deleteInterview) {
+        if (!deletedInterview) {
             return res
                 .status(404)
                 .json({ msg: "Interview Not Found Or already deleted" });
