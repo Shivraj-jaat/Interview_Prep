@@ -4,17 +4,17 @@ const router = express.Router();
 const { authentication, authorization } = require("../middlewares/auth");
 
 const {
-    addInterview,
-    getAllInterviews,
-    getInterviewById,
-    updateInterview,
-    deleteInterview,
+  addInterview,
+  getAllInterviews,
+  getInterviewById,
+  updateInterview,
+  deleteInterview,
 } = require("../controllers/interviewController");
 
 // Admin Routes
 router.post("/add-interview", authentication, authorization, addInterview);
-router.put("/update/:id", authentication, authorization, updateInterview);
 router.delete("/delete/:id", authentication, authorization, deleteInterview);
+router.put("/update/:id", authentication, authorization, updateInterview);
 
 // User Routes
 router.get("/all-interviews", authentication, getAllInterviews);
